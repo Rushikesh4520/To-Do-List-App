@@ -1,6 +1,9 @@
 <?php
 
 $insert = false;
+$update = false;
+$delete = false;
+
 
 // Databse connection
 $servername = "localhost";
@@ -17,30 +20,43 @@ if (!$conn) {
 //     echo " database connnected";
 // }
 
+// Delete
+if (isset($_GET['delete'])) {
+    $sno = $_GET['delete'];
+    $delete = true;
+    $sql = "DELETE FROM `notes` WHERE `sno` = $sno";
+    $result = mysqli_query($conn, $sql);
+}
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if(isset($_POST['snoEdit'])){
+    if (isset($_POST['snoEdit'])) {
         //Update the record
         $sno = $_POST['snoEdit'];
         $title = $_POST['titleEdit'];
         $description = $_POST['descriptionEdit'];
 
+        // sql query to upsatee
         $sql = "UPDATE `notes` SET `title` = '$title' , `description` = '$description' WHERE `notes`.`sno` = $sno";
         $result = mysqli_query($conn, $sql);
-    }
-    else{
-    $title = $_POST['title'];
-    $description = $_POST['description'];
-
-    $sql = "INSERT INTO `notes` ( `title`, `description` ) VALUES ( '$title', '$description')";
-    $result = mysqli_query($conn, $sql);
-
-
-    if ($result) {
-        // echo " data inserted successfully";/
-        $insert = true;
+        if ($result) {
+            $update = true;
+        } else {
+            echo " We could not update the record successfully!";
+        }
     } else {
-        echo "Data not inserted ";
-    }
+        $title = $_POST['title'];
+        $description = $_POST['description'];
+
+        $sql = "INSERT INTO `notes` ( `title`, `description` ) VALUES ( '$title', '$description')";
+        $result = mysqli_query($conn, $sql);
+
+
+        if ($result) {
+            // echo " data inserted successfully";/
+            $insert = true;
+        } else {
+            echo "Data not inserted ";
+        }
     }
 }
 
@@ -140,20 +156,39 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 
     <?php
-
     if ($insert) {
         echo " <div class='alert alert-success alert-dismissible fade show' role='alert'>
-                    <strong>SUCCESS!</strong> Your Note has been saved successfully.
-                     <button type='button' class='close' data-dismiss='alert' aria-label='Close'>
-                    <span aria-hidden='true'>&times;</span>
-                    </button>
-                </div>";
+        <strong>SUCCESS!</strong> Your Note has been saved successfully.
+        <button type='button' class='close' data-dismiss='alert' aria-label='Close'>
+        <span aria-hidden='true'>&times;</span>
+        </button>
+        </div>";
     }
-
-
-
-
     ?>
+
+    <?php
+    if ($update) {
+        echo " <div class='alert alert-success alert-dismissible fade show' role='alert'>
+        <strong>SUCCESS!</strong> Your Note has been updated successfully.
+        <button type='button' class='close' data-dismiss='alert' aria-label='Close'>
+        <span aria-hidden='true'>&times;</span>
+        </button>
+        </div>";
+    }
+    ?>
+
+    <?php
+    if ($delete) {
+        echo " <div class='alert alert-success alert-dismissible fade show' role='alert'>
+        <strong>SUCCESS!</strong> Your Note has been deleted successfully.
+        <button type='button' class='close' data-dismiss='alert' aria-label='Close'>
+        <span aria-hidden='true'>&times;</span>
+        </button>
+        </div>";
+    }
+    ?>
+
+
 
 
     <!-- //form -->
@@ -200,7 +235,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <th scope='row'>" . $sno . "</th>
                 <td>" . $row['title'] . "</td>
                 <td>" . $row['description'] . "</td>
-                <td> <button class='edit btn btn-sm btn-primary' id =" .$row['sno']." >Edit</button>  <a href='/del'>Delete</a> </td>
+                <td> 
+                    <button class='edit btn btn-sm btn-primary' id =" . $row['sno'] . " >Edit</button>  
+                    <button class='delete btn btn-sm btn-primary' id =d" . $row['sno'] . " >Delete</button>
+                 </td>
                 </tr>";
                 }
 
@@ -245,6 +283,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 snoEdit.value = e.target.id;
                 console.log(e.target.id);
                 $('#editmodal').modal('toggle');
+            })
+        })
+
+        //Delete
+        deletes = document.getElementsByClassName('delete');
+        Array.from(deletes).forEach((element) => {
+            element.addEventListener("click", (e) => {
+                console.log("edit", );
+                sno = e.target.id.substr(1, );
+
+
+                if (confirm(" press a button")) {
+                    console.log("Yes");
+                    window.location = `/crud/index.php?delete=${sno}`;
+                } else {
+                    console.log("No");
+                }
             })
         })
     </script>
