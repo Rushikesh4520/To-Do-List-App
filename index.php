@@ -1,7 +1,8 @@
 <?php
 
-$insert= false;
+$insert = false;
 
+// Databse connection
 $servername = "localhost";
 $username = "root";
 $password = "";
@@ -17,18 +18,29 @@ if (!$conn) {
 // }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    if(isset($_POST['snoEdit'])){
+        //Update the record
+        $sno = $_POST['snoEdit'];
+        $title = $_POST['titleEdit'];
+        $description = $_POST['descriptionEdit'];
+
+        $sql = "UPDATE `notes` SET `title` = '$title' , `description` = '$description' WHERE `notes`.`sno` = $sno";
+        $result = mysqli_query($conn, $sql);
+    }
+    else{
     $title = $_POST['title'];
     $description = $_POST['description'];
 
     $sql = "INSERT INTO `notes` ( `title`, `description` ) VALUES ( '$title', '$description')";
-    $result = mysqli_query($conn , $sql);
+    $result = mysqli_query($conn, $sql);
 
 
-    if($result){
+    if ($result) {
         // echo " data inserted successfully";/
         $insert = true;
-    }else{
+    } else {
         echo "Data not inserted ";
+    }
     }
 }
 
@@ -47,13 +59,59 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <!-- datatable css link -->
+    <link rel="stylesheet" href="//cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
 
-    <title>Crud Project</title>
+    <title> Crud Project </title>
+
+
+
 </head>
 
 <body>
 
 
+
+    <!-- Edit  modal
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#editmodal">
+        Edit modal
+    </button> -->
+
+    <!-- Edit Modal -->
+    <div class="modal fade" id="editmodal" tabindex="-1" role="dialog" aria-labelledby="editmodal" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle">Edit Note</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form action="/crud/index.php" method="POST">
+                        <input type="hidden" name="snoEdit" id="snoEdit">
+                        <div class="form-group">
+                            <label for="title">Notes Title</label>
+                            <input type="text" class="form-control" id="titleEdit" name="titleEdit" aria-describedby="emailHelp" placeholder="Enter Note Title">
+                        </div>
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <textarea class="form-control" id="descriptionEdit" name="descriptionEdit" rows="3"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Update Note</button>
+                    </form>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- //Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <a class="navbar-brand" href="#">php Crud</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -81,9 +139,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </nav>
 
 
-<?php
+    <?php
 
-    if($insert){
+    if ($insert) {
         echo " <div class='alert alert-success alert-dismissible fade show' role='alert'>
                     <strong>SUCCESS!</strong> Your Note has been saved successfully.
                      <button type='button' class='close' data-dismiss='alert' aria-label='Close'>
@@ -91,16 +149,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     </button>
                 </div>";
     }
-    
 
 
 
-?>
 
+    ?>
+
+
+    <!-- //form -->
     <div class="container my-3">
         <h2>Add a Note</h2>
 
-        <form action="/crud/index.php" method="POST">
+        <form action="/crud/index.php?" method="POST">
             <div class="form-group">
                 <label for="title">Notes Title</label>
                 <input type="text" class="form-control" id="title" name="title" aria-describedby="emailHelp" placeholder="Enter Note Title">
@@ -113,16 +173,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </form>
     </div>
 
-    <div class="container">
 
 
-        <table class="table">
+    <div class="container my-4">
+        <table class="table" id="myTable">
             <thead>
                 <tr>
                     <th scope="col">S.No</th>
                     <th scope="col">Title</th>
                     <th scope="col">Description</th>
-           <th scope="col">Actions</th>
+                    <th scope="col">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -132,26 +192,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $sql = "SELECT * FROM `notes`";
                 $result = mysqli_query($conn, $sql);
 
+                $sno = 0;
                 while ($row = mysqli_fetch_assoc($result)) {
 
-                echo "<tr>
-                <th scope='row'>" . $row['sno'] . "</th>
+                    $sno = $sno + 1;
+                    echo "<tr>
+                <th scope='row'>" . $sno . "</th>
                 <td>" . $row['title'] . "</td>
                 <td>" . $row['description'] . "</td>
-                <td>Action</td>
+                <td> <button class='edit btn btn-sm btn-primary' id =" .$row['sno']." >Edit</button>  <a href='/del'>Delete</a> </td>
                 </tr>";
-                    
-                 }
+                }
+
+
+
                 ?>
 
             </tbody>
         </table>
 
     </div>
-
-
-
-
+    <hr>
 
 
 
@@ -160,6 +221,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+    <!-- // Datatable script -->
+    <script src="//cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#myTable').DataTable();
+        })
+        // let table = new DataTable('#myTable');
+    </script>
+
+    <script>
+        edits = document.getElementsByClassName('edit');
+        Array.from(edits).forEach((element) => {
+            element.addEventListener("click", (e) => {
+                console.log("edit", );
+                tr = e.target.parentNode.parentNode;
+                title = tr.getElementsByTagName("td")[0].innerText;
+                description = tr.getElementsByTagName("td")[1].innerText;
+                console.log(title, description);
+                titleEdit.value = title;
+                descriptionEdit.value = description;
+                snoEdit.value = e.target.id;
+                console.log(e.target.id);
+                $('#editmodal').modal('toggle');
+            })
+        })
+    </script>
+
 </body>
 
 </html>
